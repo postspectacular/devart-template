@@ -4,4 +4,4 @@ some of the more abstract elements of a project. I've just scanned
 some of the initial sketches about the underlying approach to
 formulate a generative design system:
 
-![Initial sketches](../project_images/20140205-sketches.png?raw=true "Initial sketches")
+![Initial sketches](../project_images/20140205-sketches.jpg?raw=true "Initial sketches")
