@@ -1,6 +1,6 @@
 Below is a diagram to give a better overview of the technical aspects of this project. Apart from key components like the use of GAE and various frontend elements, none of this is set in stone yet and am sure some parts are likely to change as I progress. But this is a good reference to understand (even for myself) what I'm working towards over the coming months.
 
-![System architecture](../project_images/2014-02-05-architecture.jpg "System architecture")
+![System architecture](../project_images/20140205-architecture.jpg "System architecture")
 
 Maybe I should also list some of the main tools & languages I'm using to build this all:
 
