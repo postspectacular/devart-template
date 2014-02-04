@@ -14,8 +14,6 @@ Collaboration takes place both in the museum and remotely through a browser, on 
 
 Links to prototypes (visual, interactive or even purely technical ones) will be added to this section as soon as they're ready for public consumption (aiming for at least one per week). Most likely each will also be accompanied by a little blog post on the main [DevArt](http://g.co/devart) site and I will also create an issue for each of these prototypes to collect general feedback from interested people.
 
-* Prototype #0 (coming soon)
-
 ## Links to External Libraries
 
 As part of this project commission I'm hoping to polish several new libraries for initial public release. These libraries are playing a key role in this project, however after completely throwing over designs many times, some of these libs have been undergoing heavy refactoring for >2.5 years, but have been used successfully in production and are still kept in a private repo for another few days/week until I'm happy with a public soft launch. I'm very keen to get these out, but want to get it right and make it all useful to others...
@@ -35,5 +33,7 @@ Successor to my [toxiclibs](http://toxiclibs.org) project for Clojure & ClojureS
 ### Linked data kit
 
 Leightweight, semantic graph (RDF) framework with pluggable storage backends, SPARQL-like query engine, rule-based inferencing...
+
+A selection of other 3rd party libraries (potentially) used for this project will be discussed in further posts...
 
 Happy coding! :)
