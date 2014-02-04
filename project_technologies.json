@@ -7,9 +7,7 @@
     "platforms": [
       "Google App Engine",
       "Google Compute Engine",
-      "Raspberry PI",
-      "Ubuntu",
-      "Arduino"
+      "Raspberry PI"
     ],
     "toolkits": [
       "LuxRender",
