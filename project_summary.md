@@ -20,7 +20,7 @@ As part of this project commission I'm hoping to polish several new libraries fo
 
 ### Tweeny
 
-[tweeny](http://code.thi.ng/tweeny) is a small Clojure library for tweening generic values (e.g. defined as key frames). It can operate on nested data structures and is completely independent from any rendering aspects (key frames aren't just useful for visual anim). It's also ClojureScript compatible.
+[tweeny](http://code.thi.ng/tweeny) is a small Clojure library for tweening numeric values. It can operate on nested data structures, supports open intervals & key values defined as timebased functions (thus allowing for moving targets) and is completely independent from any rendering aspects (key frames aren't just useful for visual anim). It's also ClojureScript compatible.
 
 ### Luxor
 
