@@ -1,16 +1,39 @@
 {
-    "technologies": {
-        "apis": [
-            "insert apis"
-        ],
-        "platforms": [
-            "insert platforms"
-        ],
-        "toolkits": [
-            "insert toolkits"
-        ]
-    },
-    "themes": [
-        "insert themes"
+  "technologies": {
+    "apis": [
+      "Google Maps",
+      "Twitter"
+    ],
+    "platforms": [
+      "Google App Engine",
+      "Google Compute Engine",
+      "Raspberry PI",
+      "Ubuntu",
+      "Arduino"
+    ],
+    "toolkits": [
+      "LuxRender",
+      "OpenJDK",
+      "code.thi.ng"
     ]
+  },
+  "themes": [
+    "3d modelling",
+    "authorship",
+    "biology",
+    "co-creation",
+    "constraints"
+    "design tool",
+    "digital fabrication",
+    "dna",
+    "generative design",
+    "geometry",
+    "mesh",
+    "physics",
+    "recursion",
+    "reusable components",
+    "social curation",
+    "subdivision",
+    "tree structures"
+  ]
 }
