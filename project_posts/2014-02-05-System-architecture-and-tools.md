@@ -20,7 +20,7 @@ The Clojure community eschews monolithic frameworks (e.g. Rails, Spring) and ins
 
 ## Angular.js vs. Om (React.js)
 
-I've previously worked with [Angular](http://angularjs.org) and very much enjoyed it, though [David Nolen](http://) has been doing stellar work on his Om ClojureScript wrapper around [React]() which are very promising. So a final decision about which to use is still outstanding.
+I've previously worked with [Angular](http://angularjs.org) and very much enjoyed it, though [David Nolen](http://swannodette.github.io) has been doing stellar work on his Om ClojureScript wrapper around [React](http://facebook.github.io/react/) which are very promising. So a final decision about which to use is still outstanding.
 
 ## Leiningen
 
@@ -32,7 +32,7 @@ I have to admit that I'm not belonging to the hardcore TDD camp, largely because
 
 ## Toxiclibs & co
 
-A large part of the code will deal with mesh generation, WebGL rendering and various other geometry related tasks. My own set of libraries will play the key role here.
+A large part of the code will deal with mesh generation, WebGL rendering and various other geometry related tasks. My own set of libraries will play the key role here. As mentioned in the project summary, I've been working on a successor of [toxiclibs](http://toxiclibs.org) for some time now and this will be the 3rd large project where I can further utilize this new toolset in a production environment.
 
 ## Blender
 
