@@ -2,17 +2,27 @@
   "technologies": {
     "apis": [
       "Google Maps",
-      "Twitter"
+      "Twitter",
+      "WebGL",
+      "Websockets",
     ],
     "platforms": [
       "Google App Engine",
       "Google Compute Engine",
-      "Raspberry PI"
+      "Google Closure compiler",
+      "Raspberry PI",
+      "Arduino",
+      "Ubuntu"
     ],
     "toolkits": [
       "LuxRender",
       "OpenJDK",
-      "code.thi.ng"
+      "Ring",
+      "Compojure",
+      "Liberator",
+      "Hiccup",
+      "Toxiclibs",
+      "core.async"
     ]
   },
   "themes": [
@@ -32,6 +42,7 @@
     "reusable components",
     "social curation",
     "subdivision",
-    "tree structures"
+    "tree structures",
+    "gui"
   ]
 }
