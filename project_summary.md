@@ -12,7 +12,7 @@ Collaboration takes place both in the museum and remotely through a browser, on 
 
 ## Link to Prototype
 
-Links to prototypes (visual, interactive or even purely technical ones) will be added to this section as soon as they're ready for public consumption (aiming for at least one per week). Most likely each will also be accompanied by a little blog post on the main [DevArt](http://g.co/devart) site and I will also create an issue for each of these prototypes to collect general feedback from interested people.
+Links to prototypes (visual, interactive or even purely technical ones) will be added to this section as soon as they're ready for public consumption (aiming for at least one per week). Most likely each will also be accompanied by a little blog post on the main [DevArt](http://devart.withgoogle.com) site and I will also create an issue for each of these prototypes to collect general feedback from interested people.
 
 ## Links to External Libraries
 
@@ -32,7 +32,7 @@ Successor to my [toxiclibs](http://toxiclibs.org) project for Clojure & ClojureS
 
 ### Linked data kit
 
-Leightweight, semantic graph (RDF) framework with pluggable storage backends (e.g. Redis, CouchDB, Cassandra), SPARQL-like query engine, JSON-LD support, rule-based inferencing...
+Leightweight, semantic graph ([RDF](https://en.wikipedia.org/wiki/Resource_Description_Framework)) framework with pluggable storage backends (e.g. [Redis](http://redis.io/), [CouchDB](http://couchdb.apache.org), [Cassandra](http://cassandra.apache.org)), [SPARQL](https://en.wikipedia.org/wiki/SPARQL)-like query engine, [JSON-LD](http://json-ld.org/) support, rule-based inferencing...
 
 A selection of other 3rd party libraries (potentially) used for this project will be discussed in further posts...
 
