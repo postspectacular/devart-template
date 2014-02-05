@@ -2,7 +2,7 @@
 (working title)
 
 ## Authors
-- Karsten Schmidt, postspectacular
+- Karsten Schmidt, https://github.com/postspectacular
 
 ## Description
 
