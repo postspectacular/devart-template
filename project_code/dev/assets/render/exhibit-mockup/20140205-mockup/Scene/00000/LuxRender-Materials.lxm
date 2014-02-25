@@ -1,0 +1,50 @@
+# Materials File
+
+MakeNamedVolume "air" "clear"
+	"float fresnel" [1.000293016433716]
+	"color absorption" [0.00000000 0.00000000 0.00000000]
+
+MakeNamedVolume "arcylic" "clear"
+	"float fresnel" [1.488000035285950]
+	"color absorption" [0.00000000 0.00000000 0.00000000]
+
+MakeNamedMaterial "Material.002"
+	"color Kd" [0.02197943 0.02197943 0.02197943]
+	"float sigma" [0.000000000000000]
+	"string type" ["matte"]
+
+MakeNamedMaterial "Material.001"
+	"color Kd" [0.63999999 0.63999999 0.63999999]
+	"float sigma" [0.000000000000000]
+	"string type" ["matte"]
+
+MakeNamedMaterial "screen"
+	"color Kd" [0.63999999 0.63999999 0.63999999]
+	"float sigma" [0.000000000000000]
+	"string type" ["matte"]
+
+MakeNamedMaterial "Material.004"
+	"color Kd" [0.63999999 0.63999999 0.63999999]
+	"float sigma" [0.000000000000000]
+	"string type" ["matte"]
+
+MakeNamedMaterial "Material.006_base"
+	"bool architectural" ["false"]
+	"bool dispersion" ["false"]
+	"string type" ["glass2"]
+
+MakeNamedMaterial "Material.006"
+	"bool multibounce" ["true"]
+	"float d" [2.000000000000000]
+	"color Ka" [0.04624920 0.15645833 0.28829461]
+	"float index" [1.488000035285950]
+	"color Ks" [1.00000000 1.00000000 1.00000000]
+	"float uroughness" [0.050000000745058]
+	"float vroughness" [0.050000000745058]
+	"string basematerial" ["Material.006_base"]
+	"string type" ["glossycoating"]
+
+MakeNamedMaterial "Material"
+	"color Kd" [0.63999999 0.63999999 0.63999999]
+	"float sigma" [0.000000000000000]
+	"string type" ["matte"]
