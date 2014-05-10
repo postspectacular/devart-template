@@ -66,17 +66,6 @@
   (-> (a/aabb [0.15 0.4 0.3]) (g/center (vec3 {:y -0.5 :z 0.6}))
       (g/as-mesh)))
 
-(defn export-panels
-  [panels]
-  (dorun
-   (map-indexed
-    (fn [i [p n r]]
-      (with-open [o (io/output-stream (format "p%03d.stl" i))]
-        (let [p' (g/center (point-towards2 p n V3Z r V3Y))]
-          (mio/write-stl o p'))))
-    panels)))
-
-
 (def tablets
   (->> (map
         (fn [i z]
@@ -114,8 +103,7 @@
         floor
         canopy
         plinths tablets plinth-canopies
-        shelves lcds
-        ]
+        shelves lcds]
        (reduce g/into)))
 
 (with-open [o (io/output-stream "exhibit.stl")] (mio/write-stl o scene-model))
@@ -134,24 +122,36 @@
         :width 640 :height 360
         :response :agfachrome-rsx2-200cd
         :display-interval 5 :halt-spp 1000})
-      (tonemap-linear {:iso 100 :exposure 0.5 :f-stop 8 :gamma 2.2})
-      (volume :glass {:type :clear :absorb [1.0 0.905 0.152] :abs-depth 0.01 :ior 1.488})
-      (material-matte :white {:diffuse [0.8 0.8 0.8]})
-      (material-matte :black {:diffuse [0.1 0.1 0.1]})
-      (material-matte :yellow__ {:diffuse [0.8 0.8 0.5] :alpha 0.2})
-      (material-glass2 :yellow {:interior :glass})
-      (area-light :lcd {:mesh lcds :mesh-type :stl :color [1.0 0.13 0.08] :gain 0.1 :power 1})
-      (area-light :tablets {:mesh tablets :mesh-type :stl :color [1 1 1] :gain 1 :power 1})
-      (spot-light :spot {:from [0 0 0] :to [0 0 -1] :cone-angle 45 :cone-delta 5
-                         :tx {:translate [0 -0.5 0.46] :rx 180}})
-      (stl-mesh :metal {:mesh (reduce g/into [truss crossbar plinths])
-                        :material :black})
-      (stl-mesh :white {:mesh (reduce g/into [floor shelves])
-                        :material :white})
-      (stl-mesh :canopy {:mesh (reduce g/into [canopy plinth-canopies]) :material :yellow})
-      (stl-mesh :ilios {:mesh (reduce g/into [printer projector]) :material :white})
+      (tonemap-linear
+       {:iso 100 :exposure 0.5 :f-stop 8 :gamma 2.2})
+      (volume
+       :glass {:type :clear :absorb [1.0 0.905 0.152] :abs-depth 0.01 :ior 1.488})
+      (material-matte
+       :white {:diffuse [0.8 0.8 0.8]})
+      (material-matte
+       :black {:diffuse [0.1 0.1 0.1]})
+      (material-matte
+       :yellow__ {:diffuse [0.8 0.8 0.5] :alpha 0.2})
+      (material-glass2
+       :yellow {:interior :glass})
+      (area-light
+       :lcd {:mesh lcds :mesh-type :stl :color [1.0 0.13 0.08] :gain 0.1 :power 1})
+      (area-light
+       :tablets {:mesh tablets :mesh-type :stl :color [1 1 1] :gain 1 :power 1})
+      (spot-light
+       :spot {:from [0 0 0] :to [0 0 -1] :cone-angle 45 :cone-delta 5
+              :tx {:translate [0 -0.5 0.46] :rx 180}})
+      (stl-mesh
+       :metal {:mesh (reduce g/into [truss crossbar plinths])
+               :material :black})
+      (stl-mesh
+       :white {:mesh (reduce g/into [floor shelves])
+               :material :white})
+      (stl-mesh
+       :canopy {:mesh (reduce g/into [canopy plinth-canopies]) :material :yellow})
+      (stl-mesh
+       :ilios {:mesh (reduce g/into [printer projector]) :material :white})
       (lio/serialize-scene "exhibit" false)
-      (lio/export-scene)
-      ))
+      (lio/export-scene)))
 
 ;; (save-lxs)

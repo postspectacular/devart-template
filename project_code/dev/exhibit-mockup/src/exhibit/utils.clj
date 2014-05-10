@@ -16,7 +16,8 @@
    [thi.ng.geom.mesh.io :as mio]
    [thi.ng.geom.mesh.csg :as csg]
    [thi.ng.common.data.core :as d]
-   [thi.ng.common.math.core :as m :refer [HALF_PI PI TWO_PI]]))
+   [thi.ng.common.math.core :as m :refer [HALF_PI PI TWO_PI]]
+   [clojure.java.io :as io]))
 
 (defn make-wires
   "Takes a mesh and creates a new mesh of thin strips from each face's
@@ -77,8 +78,8 @@
             (mapcat
              (fn [[sa sb]]
                (map make-face
-                       (d/successive-nth 2 sa)
-                       (d/successive-nth 2 sb))))))))
+                    (d/successive-nth 2 sa)
+                    (d/successive-nth 2 sb))))))))
 
 (defn lathe-raw
   [points res phi rot-fn & [face-fn]]
@@ -108,3 +109,21 @@
        (q/quad3)
        (g/extrude {:offset (g/* (gu/ortho-normal (% 0) (% 1) (% 2)) depth)})
        (g/faces)))
+
+(defn make-panel-spec
+  [inset]
+  #(let [[a b c d :as points] (q/inset-quad % inset)
+         q (q/quad3 points)
+         n (quad-normal points)
+         r (g/normalize (g/- (g/mix a b) (g/mix c d)))]
+     [points n r]))
+
+(defn save-meshes
+  ([meshes]
+     (save-meshes (format "p-%d.stl" (System/currentTimeMillis)) meshes))
+  ([path meshes]
+     (let [write (if (.endsWith path ".ply") mio/write-ply mio/write-stl)]
+       (with-open [o (io/output-stream path)]
+         (->> meshes
+              (reduce g/into)
+              (write o))))))

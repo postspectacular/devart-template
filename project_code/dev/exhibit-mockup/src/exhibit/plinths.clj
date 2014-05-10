@@ -45,11 +45,20 @@
          (mapcat identity)
          (gm/into-mesh))))
 
+(defn make-plinth-panels
+  [surf-points]
+  (let [strips (mapv #(lathe-to-point 0.05 0.1 6 %) surf-points)]
+    (->> (conj strips (first strips))
+         (connect-strips (make-panel-spec 0.003)))))
+
 (def p-height-sm 0.65)
 (def p-height-xl 0.8)
 
 (def plinth-surf-sm (make-plinth-surface p-height-sm))
 (def plinth-surf-xl (make-plinth-surface p-height-xl))
+
+(def plinth-panels-sm (make-plinth-panels (make-plinth-surf-points p-height-sm)))
+(def plinth-panels-xl (make-plinth-panels (make-plinth-surf-points p-height-xl)))
 
 (def plinth-canopies
   (->> (map

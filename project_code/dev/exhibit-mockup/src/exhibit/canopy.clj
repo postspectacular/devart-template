@@ -13,30 +13,30 @@
    [thi.ng.common.math.core :as m :refer [HALF_PI PI TWO_PI]]))
 
 ;; lathe curve for panels/tiles, defined in XZ plane
+
+(def canopy-segments 13)
+(def canopy-res 26)
+
 (def lathe
-  (let [points (mapv (comp :xzy vec3) [[0.46 0.1] [0.46 1.0] [0.7 2.75] [1.2 3.0]])]
-    (conj (vec (b/sample-segment points 13)) (peek points))))
+  (let [points (mapv (comp :xzy vec3) [[0.46 0.1] [0.46 1.0] [0.7 2.75] [1.19 3.0]])]
+    (-> points
+        (b/sample-segment canopy-segments)
+        (vec)
+        (conj (peek points)))))
 
-(def canopy-flat
-  (-> (gm/lathe-mesh
-       lathe 26 TWO_PI g/rotate-z
-       #(vector (q/inset-quad % 0.003)))
-      (g/transform (g/translate M44 0 -0.5 0))))
+#_(def canopy-flat
+    (-> (gm/lathe-mesh lathe canopy-res TWO_PI g/rotate-z
+                       #(vector (q/inset-quad % 0.003)))
+        (g/transform (g/translate M44 0 -0.5 0))))
 
-;;(def wires (make-wires canopy-flat (vec3 0 -0.5 3.05) 1.80 0.0005))
+;; (def wires (make-wires canopy-flat (vec3 0 -0.5 3.05) 1.80 0.0005))
 
 (def canopy
-  (-> (gm/lathe-mesh
-       lathe 26 TWO_PI g/rotate-z
-       (inset-and-extrude-quad 0.003 0.005))
+  (-> (gm/lathe-mesh lathe canopy-res TWO_PI g/rotate-z
+                     (inset-and-extrude-quad 0.003 0.005))
       (g/transform (g/translate M44 0 -0.5 0))
       (g/tessellate)))
 
 (def canopy-panels
-  (-> (lathe-raw
-       lathe 26 TWO_PI g/rotate-z
-       #(let [[a b c d :as points] (q/inset-quad % 0.003) ;;(g/scale-size* 0.95 %)
-              q (q/quad3 points)
-              n (quad-normal points)
-              r (g/normalize (g/- (g/mix a b) (g/mix c d)))]
-          [points n r]))))
+  (->> (lathe-raw lathe canopy-res TWO_PI g/rotate-z (make-panel-spec 0.003))
+       (take canopy-segments)))
