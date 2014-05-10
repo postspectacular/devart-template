@@ -59,7 +59,7 @@
   [r1 z1 num-seg p]
   (let [q (-> p :xy (g/normalize r1) (get :xyz z1))
         qc (assoc q :z (m/mix (q :z) (p :z) 0.25))
-        pc (-> p :xy (g/* 0.75) (vec3) (assoc :z (p :z)))]
+        pc (-> p :xy (g/* 0.5) (vec3) (assoc :z (m/mix (p :z) z1 0.25)))]
     (conj (vec (b/sample-segment [q qc pc p] num-seg)) p)))
 
 (defn connect-strips
