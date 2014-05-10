@@ -39,9 +39,9 @@
 
 (defn make-plinth-canopy
   [surf-points]
-  (let [strips (mapv #(lathe-to-point 0.05 0.1 6 %) surf-points)]
+  (let [strips (mapv #(lathe-to-point 0.03 0.1 6 %) surf-points)]
     (->> (conj strips (first strips))
-         (connect-strips (inset-and-extrude-quad 0.003 0.003))
+         (connect-strips (inset-and-extrude-quad 0.002 0.003))
          (mapcat identity)
          (gm/into-mesh))))
 
@@ -49,7 +49,7 @@
   [surf-points]
   (let [strips (mapv #(lathe-to-point 0.05 0.1 6 %) surf-points)]
     (->> (conj strips (first strips))
-         (connect-strips (make-panel-spec 0.003)))))
+         (connect-strips (make-panel-spec 0.002)))))
 
 (def p-height-sm 0.65)
 (def p-height-xl 0.8)

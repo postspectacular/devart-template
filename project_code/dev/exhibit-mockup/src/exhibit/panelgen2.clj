@@ -46,7 +46,7 @@
              :out {4 (inner :rows i3 (inner :cols (/ i3 2) nil))})
         ext (fn [dir1 n dir2 elen]
               (mg/extrude
-               :dir :f :len 0.0075
+               :dir :f :len 0.005
                :out [(mg/subdiv
                       :slices 3
                       :out [{} {}
@@ -63,6 +63,11 @@
                   (assoc-in s42 [:out 3] (ext :rows nrows :w el))
                   (assoc-in s42 [:out 2] (ext :rows nrows :e el))])]
     (mg/split-displace :x :z :offset o1 :out [s3 s3])))
+
+(comment
+  (mg/subdiv-inset
+   :dir :z :inset i1
+   :out {4 nil}))
 
 (defn make-panel-seed
   [[[d h e a :as points] n] depth]
@@ -81,17 +86,17 @@
 (defn make-seg-panel15
   [i p]
   (let [maxy 14
-        i1 (m/clamp (m/map-interval i 6 maxy 0.0225 0.05) 0.0225 0.05)
+        i1 (m/map-interval-clamped i 6 maxy 0.0225 0.05)
         o1 (m/map-interval i 0 maxy 0.025 0.01)
-        el (m/clamp (m/map-interval i 5 maxy 0.005 0.03) 0.005 0.03)
+        el (m/map-interval-clamped i 5 maxy 0.005 0.03)
         nr (cond
             (< i 5) 11
             (< i 8) 9
             (< i 10) 7
             (< i 13) 5
             :default 3)
-        ai (m/clamp (m/map-interval i 6 maxy 0.002 0.003) 0.002 0.003)
-        al (m/clamp (m/map-interval i 6 maxy 0 0.04) 0 0.03)
+        ai (m/map-interval-clamped i 6 maxy 0.002 0.003)
+        al (m/map-interval-clamped i 6 maxy 0 0.04 0 0.03)
         leaf (when (pos? al) (make-pedals ai al))
         t (make-tree o1 0 i1 0.003 0.0025 nr el leaf)]
     (make-panel p t 0.003)))
@@ -99,19 +104,36 @@
 (defn make-seg-panel13
   [i p]
   (let [maxy 12
-        i1 (m/clamp (m/map-interval i 5 maxy 0.0225 0.05) 0.0225 0.05)
+        i1 (m/map-interval-clamped i 5 maxy 0.0225 0.05)
         o1 (m/map-interval i 0 maxy 0.025 0.01)
-        el (m/clamp (m/map-interval i 5 maxy 0.005 0.03) 0.005 0.025)
+        el (m/map-interval-clamped i 5 maxy 0.005 0.03 0.005 0.025)
         nr (cond
             (< i 4) 11
             (< i 6) 9
             (< i 8) 7
             (< i 11) 5
             :default 3)
-        ai (m/clamp (m/map-interval i 4 maxy 0.002 0.003) 0.002 0.003)
-        al (m/clamp (m/map-interval i 4 maxy 0 0.04) 0 0.03)
+        ai (m/map-interval-clamped i 4 maxy 0.002 0.003)
+        al (m/map-interval-clamped i 4 maxy 0 0.04 0 0.03)
         leaf (when (pos? al) (make-pedals ai al))
         t (make-tree o1 0 i1 0.003 0.0025 nr el leaf)]
+    (make-panel p t 0.003)))
+
+(defn make-seg-panel6
+  [i p]
+  (let [maxy 5
+        i1 (m/map-interval-clamped i 2 maxy 0.01 0.025)
+        o1 (m/map-interval i 0 maxy 0.01 0.005)
+        el (m/map-interval-clamped i 2 maxy 0.005 0.015)
+        nr (cond
+            (< i 2) 11
+            (< i 3) 9
+            (< i 4) 7
+            :default 5)
+        ai (m/map-interval-clamped i 2 maxy 0.0005 0.001)
+        al (m/map-interval-clamped i 2 maxy 0 0.005)
+        leaf (when (pos? al) (make-pedals ai al))
+        t (make-tree o1 0 i1 0.0025 0.0015 nr el leaf)]
     (make-panel p t 0.003)))
 
 (defn make-segment
@@ -119,6 +141,11 @@
   (binding [m/*eps* 1e-9]
     (mg/union-mesh
      (map panel-fn (range) panels))))
+
+(defn make-rotated-segment
+  [panel-fn panels res i]
+  (-> (make-segment panel-fn panels)
+      (g/transform (g/rotate-z M44 (* i (/ TWO_PI res))))))
 
 (defn make-rotate-z-fn
   [^double theta]
