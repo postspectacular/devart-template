@@ -3,7 +3,7 @@
    [thi.ng.geom.core :as g]
    [thi.ng.geom.core.utils :as gu]
    [thi.ng.geom.core.vector :as v :refer [vec3 V3Y V3Z]]
-   [thi.ng.geom.core.matrix :refer [M44]]
+   [thi.ng.geom.core.matrix :as mat :refer [M44]]
    [thi.ng.geom.core.quaternion :as quat]
    [thi.ng.geom.aabb :as a]
    [thi.ng.geom.bezier :as b]
@@ -54,6 +54,19 @@
         rt (+ m/PI (Math/acos (g/dot r' to-right)))
         qr (quat/quat-from-axis-angle to rt)]
     (g/transform tx q)))
+
+(defn point-towards3
+  [e ref from to up]
+  (let [[fx fy fz :as f] from
+        [sx sy sz :as s] (gu/ortho-normal up f)
+        [tx ty tz :as t] (gu/ortho-normal f s)
+        m (mat/matrix44
+           sx sy sz (- (g/dot s ref))
+           tx ty tz (- (g/dot t ref))
+           fx fy fz (- (g/dot f ref))
+           0.0 0.0 0.0 1.0)
+        m2 (g/rotate-around-axis M44 (gu/ortho-normal V3Z to) (g/angle-between to V3Z))]
+    (g/transform e (g/* m2 m))))
 
 (defn lathe-to-point
   [r1 z1 num-seg p]

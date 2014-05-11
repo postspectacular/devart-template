@@ -131,6 +131,8 @@
       (material-matte
        :black {:diffuse [0.1 0.1 0.1]})
       (material-matte
+       :blue {:diffuse [0.025 0.02 0.2]})
+      (material-matte
        :yellow__ {:diffuse [0.8 0.8 0.5] :alpha 0.2})
       (material-glass2
        :yellow {:interior :glass})
@@ -145,13 +147,14 @@
        :metal {:mesh (reduce g/into [truss crossbar plinths])
                :material :black})
       (stl-mesh
-       :white {:mesh (reduce g/into [floor shelves])
-               :material :white})
+       :black {:mesh floor :material :white})
       (stl-mesh
-       :canopy {:mesh (reduce g/into [canopy plinth-canopies]) :material :yellow})
+       :walls {:mesh shelves :material :blue})
+      (stl-mesh
+       :canopy {:mesh (reduce g/into [canopy]) :material :yellow})
       (stl-mesh
        :ilios {:mesh (reduce g/into [printer projector]) :material :white})
       (lio/serialize-scene "exhibit" false)
       (lio/export-scene)))
 
-;; (save-lxs)
+(save-lxs)

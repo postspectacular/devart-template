@@ -3,8 +3,10 @@
    [exhibit.utils :refer :all]
    [exhibit.canopy :refer :all]
    [exhibit.plinths :refer :all]
+   [exhibit.svg :as svg]
    [thi.ng.geom.core :as g]
-   [thi.ng.geom.core.vector :as v :refer [vec3 V3Y V3Z]]
+   [thi.ng.geom.core.utils :as gu]
+   [thi.ng.geom.core.vector :as v :refer [vec3 V3X V3Y V3Z]]
    [thi.ng.geom.core.matrix :as mat :refer [M44]]
    [thi.ng.geom.aabb :as a]
    [thi.ng.geom.plane :as pl]
@@ -34,16 +36,16 @@
                           :out [{}]}])])}))
 
 (defn make-tree
-  [o1 o2 i1 i2 i3 nrows el leaf]
+  [o1 o2 i1 i2 i3 i4 ncols nrows el leaf]
   (let [inner (fn [id i l2]
                 (let [l1 (if (pos? i) (mg/subdiv-inset :dir :z :inset i :out {4 nil}) {})]
                   (mg/subdiv id 3 :out [l2 l1 l2])))
         s41 (mg/subdiv-inset
              :dir :z :inset i2
-             :out {4 (inner :cols i3 (inner :rows (/ i3 2) nil))})
+             :out {4 (inner :cols i3 (inner :rows i4 nil))})
         s42 (mg/subdiv-inset
              :dir :z :inset i2
-             :out {4 (inner :rows i3 (inner :cols (/ i3 2) nil))})
+             :out {4 (inner :rows i3 (inner :cols i4 nil))})
         ext (fn [dir1 n dir2 elen]
               (mg/extrude
                :dir :f :len 0.005
@@ -58,8 +60,8 @@
                                     :out [(or leaf {})])})])]))
         s3 (mg/subdiv-inset
             :dir :z :inset i1
-            :out [(assoc-in s41 [:out 1] (ext :cols 3 :s el))
-                  (assoc-in s41 [:out 0] (ext :cols 3 :n el))
+            :out [(assoc-in s41 [:out 1] (ext :cols ncols :s el))
+                  (assoc-in s41 [:out 0] (ext :cols ncols :n el))
                   (assoc-in s42 [:out 3] (ext :rows nrows :w el))
                   (assoc-in s42 [:out 2] (ext :rows nrows :e el))])]
     (mg/split-displace :x :z :offset o1 :out [s3 s3])))
@@ -84,57 +86,66 @@
          (mg/union-mesh))))
 
 (defn make-seg-panel15
-  [i p]
-  (let [maxy 14
-        i1 (m/map-interval-clamped i 6 maxy 0.0225 0.05)
-        o1 (m/map-interval i 0 maxy 0.025 0.01)
-        el (m/map-interval-clamped i 5 maxy 0.005 0.03)
-        nr (cond
-            (< i 5) 11
-            (< i 8) 9
-            (< i 10) 7
-            (< i 13) 5
-            :default 3)
-        ai (m/map-interval-clamped i 6 maxy 0.002 0.003)
-        al (m/map-interval-clamped i 6 maxy 0 0.04 0 0.03)
-        leaf (when (pos? al) (make-pedals ai al))
-        t (make-tree o1 0 i1 0.003 0.0025 nr el leaf)]
-    (make-panel p t 0.003)))
+  [flat?]
+  (fn [i p]
+    (let [maxy 14
+          i1 (m/map-interval-clamped i 6 maxy 0.0225 0.05)
+          i2 0.003
+          i3 0.0025
+          i4 (* i3 0.5)
+          o1 (if flat? 0 (m/map-interval i 0 maxy 0.025 0.01))
+          el (m/map-interval-clamped i 5 maxy 0.005 0.03)
+          nr (cond
+              (< i 5) 11
+              (< i 8) 9
+              (< i 10) 7
+              (< i 13) 5
+              :default 3)
+          ai (m/map-interval-clamped i 6 maxy 0.002 0.003)
+          al (m/map-interval-clamped i 6 maxy 0 0.04 0 0.03)
+          leaf (when (pos? al) (make-pedals ai al))
+          t (make-tree o1 0 i1 i2 i3 i4 3 nr el leaf)]
+      (make-panel p t 0.003))))
 
 (defn make-seg-panel13
-  [i p]
-  (let [maxy 12
-        i1 (m/map-interval-clamped i 5 maxy 0.0225 0.05)
-        o1 (m/map-interval i 0 maxy 0.025 0.01)
-        el (m/map-interval-clamped i 5 maxy 0.005 0.03 0.005 0.025)
-        nr (cond
-            (< i 4) 11
-            (< i 6) 9
-            (< i 8) 7
-            (< i 11) 5
-            :default 3)
-        ai (m/map-interval-clamped i 4 maxy 0.002 0.003)
-        al (m/map-interval-clamped i 4 maxy 0 0.04 0 0.03)
-        leaf (when (pos? al) (make-pedals ai al))
-        t (make-tree o1 0 i1 0.003 0.0025 nr el leaf)]
-    (make-panel p t 0.003)))
+  [flat?]
+  (fn [i p]
+    (let [maxy 12
+          i1 (m/map-interval-clamped i 5 maxy 0.0225 0.05)
+          i2 0.003
+          i3 0.0025
+          i4 (* i3 0.5)
+          o1 (if flat? 0 (m/map-interval i 0 maxy 0.025 0.01))
+          el (m/map-interval-clamped i 5 maxy 0.005 0.03 0.005 0.025)
+          nr (cond
+              (< i 4) 11
+              (< i 6) 9
+              (< i 8) 7
+              (< i 11) 5
+              :default 3)
+          ai (m/map-interval-clamped i 4 maxy 0.002 0.003)
+          al (m/map-interval-clamped i 4 maxy 0 0.04 0 0.03)
+          leaf (when (pos? al) (make-pedals ai al))
+          t (make-tree o1 0 i1 i2 i3 i4 3 nr el leaf)]
+      (make-panel p t 0.003))))
 
 (defn make-seg-panel6
-  [i p]
-  (let [maxy 5
-        i1 (m/map-interval-clamped i 2 maxy 0.01 0.025)
-        o1 (m/map-interval i 0 maxy 0.01 0.005)
-        el (m/map-interval-clamped i 2 maxy 0.005 0.015)
-        nr (cond
-            (< i 2) 11
-            (< i 3) 9
-            (< i 4) 7
-            :default 5)
-        ai (m/map-interval-clamped i 2 maxy 0.0005 0.001)
-        al (m/map-interval-clamped i 2 maxy 0 0.005)
-        leaf (when (pos? al) (make-pedals ai al))
-        t (make-tree o1 0 i1 0.0025 0.0015 nr el leaf)]
-    (make-panel p t 0.003)))
+  [flat?]
+  (fn [i p]
+    (let [maxy 5
+          i1 ([0.009 0.011 0.013 0.0175 0.02 0.02] i)
+          i2 (m/map-interval-clamped i 0 maxy 0.001 0.0025)
+          i3 (m/map-interval-clamped i 0 maxy 0.001 0.002)
+          i4 (* i3 0.75)
+          o1 (if flat? 0 (m/map-interval i 0 maxy 0.01 0.005))
+          el (m/map-interval-clamped i 2 maxy 0.005 0.015)
+          nc ([3 3 3 3 5 7] i)
+          nr ([11 11 9 7 5 5] i)
+          ai (m/map-interval-clamped i 2 maxy 0.0005 0.001)
+          al (m/map-interval-clamped i 2 maxy 0 0.005)
+          leaf (when (pos? al) (make-pedals ai al))
+          t (make-tree o1 0 i1 i2 i3 i4 nc nr el leaf)]
+      (make-panel p t 0.003))))
 
 (defn make-segment
   [panel-fn panels]
@@ -178,12 +189,59 @@
      (format "pseg-%d.stl" i)
      [(make-seg i (nth panels i))])))
 
+(defn make-segment-individual-meshes
+  [panel-fn panels]
+  (binding [m/*eps* 1e-9]
+    (mapv
+     (fn [i [p n r :as panel]]
+       (let [pmesh (panel-fn i panel)
+             pmesh (point-towards3 pmesh (g/centroid pmesh) n V3Z V3X)
+             tx (g/translate M44 0 0 (- (first (gu/axis-bounds 2 (keys (:vertices pmesh))))))
+             pmesh (g/transform pmesh tx)]
+         pmesh))
+     (range) panels)))
+
 (defn export-panels
-  [panels]
+  [pmeshes]
   (dorun
    (map-indexed
-    (fn [i [p n r]]
+    (fn [i pm]
       (with-open [o (io/output-stream (format "p%03d.stl" i))]
-        (let [p' (g/center (point-towards2 p n V3Z r V3Y))]
-          (mio/write-stl o p'))))
-    panels)))
+        (mio/write-stl o pm)))
+    pmeshes)))
+
+(defn select-mesh-slice
+  [zrange m]
+  (gm/map-faces
+   (fn [f]
+     (let [c (:z (gu/centroid f))
+           d (g/dot V3Z (gu/ortho-normal f))]
+       ;;(when (m/in-range? zrange c) (prn c d))
+       (if (and (m/in-range? zrange c) (m/delta= 1.0 d 0.1))
+         [f])))
+   m))
+
+(defn mesh->svg
+  [m]
+  (->> (g/center (g/transform m (g/scale M44 1000)) (vec3 100 100 0))
+       (g/faces)
+       (map #(svg/path {:fill "black"} %))
+       (svg/svg {:width 200 :height 200})
+       (svg/->xml)))
+
+(defn export-mesh-slices-svg
+  [path m]
+  (doseq [[i zr] [[1 [0 0.0048]] [2 [0.005 0.007]] [3 [0.0075 0.0095]]]]
+    (->> m
+         (select-mesh-slice zr)
+         (mesh->svg)
+         (spit (format path i)))))
+
+(defn export-segment-slices-svg
+  [seg-id meshes]
+  (dorun
+   (map-indexed
+    (fn [i m]
+      (export-mesh-slices-svg
+       (str "seg-" seg-id "-" i "-%d.svg") m))
+    meshes)))

@@ -17,8 +17,8 @@
    [clojure.java.io :as io]))
 
 (defn make-plinth-surf-points
-  [z]
-  (let [points (-> (c/circle 0.2) (g/as-polygon 6) (g/vertices))
+  [s z]
+  (let [points (-> (c/circle (* 0.2 s)) (g/as-polygon 6) (g/vertices))
         t1 (-> M44 (g/rotate-z (/ m/PI 6)))
         t2 (-> M44 (g/rotate-y (/ m/PI -6)))
         t3 (-> M44 (g/translate 0 0 z))]
@@ -57,13 +57,13 @@
 (def plinth-surf-sm (make-plinth-surface p-height-sm))
 (def plinth-surf-xl (make-plinth-surface p-height-xl))
 
-(def plinth-panels-sm (make-plinth-panels (make-plinth-surf-points p-height-sm)))
-(def plinth-panels-xl (make-plinth-panels (make-plinth-surf-points p-height-xl)))
+(def plinth-panels-sm (make-plinth-panels (make-plinth-surf-points 0.95 (- p-height-sm 0.005))))
+(def plinth-panels-xl (make-plinth-panels (make-plinth-surf-points 0.95 (- p-height-xl 0.005))))
 
 (def plinth-canopies
   (->> (map
         (fn [i z]
-          (-> (make-plinth-canopy (make-plinth-surf-points z))
+          (-> (make-plinth-canopy (make-plinth-surf-points 0.95 z))
               (g/transform (g/translate M44 (vec3 -1.5 (- (* i 0.75) 0.5) 0)))))
         (range -1 2) [p-height-xl p-height-sm p-height-xl])
        (reduce g/into)))
