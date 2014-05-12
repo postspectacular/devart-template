@@ -8,4 +8,5 @@
                  [thi.ng/geom-types "0.3.0-SNAPSHOT"]
                  [thi.ng/geom-meshops "0.3.0-SNAPSHOT"]
                  [thi.ng/luxor "0.3.0-SNAPSHOT"]
-                 [thi.ng/morphogen "0.1.0-SNAPSHOT"]])
+                 [thi.ng/morphogen "0.1.0-SNAPSHOT"]
+                 [hiccup "1.0.5"]])

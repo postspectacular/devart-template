@@ -226,7 +226,7 @@
   (->> (g/center (g/transform m (g/scale M44 1000)) (vec3 100 100 0))
        (g/faces)
        (map #(svg/path {:fill "black"} %))
-       (svg/svg {:width 200 :height 200})
+       (svg/svg {:width "200mm" :height "200mm" :viewBox "0 0 200 200"})
        (svg/->xml)))
 
 (defn export-mesh-slices-svg
