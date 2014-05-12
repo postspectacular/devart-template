@@ -229,19 +229,29 @@
        (svg/svg {:width "200mm" :height "200mm" :viewBox "0 0 200 200"})
        (svg/->xml)))
 
+(defn mesh->svg-paths
+  [pos m]
+  (->> (g/center (g/transform m (g/scale M44 1000)) pos)
+       (g/faces)
+       (map #(svg/path {:fill "black"} %))
+       (vector :g {})))
+
 (defn export-mesh-slices-svg
   [path m]
-  (doseq [[i zr] [[1 [0 0.0048]] [2 [0.005 0.007]] [3 [0.0075 0.0095]]]]
-    (->> m
-         (select-mesh-slice zr)
-         (mesh->svg)
-         (spit (format path i)))))
+  (->> {1 [0 0.0048] 2 [0.005 0.007] 3 [0.0075 0.0095]}
+       (map
+        (fn [[i zr]]
+          (->> m
+               (select-mesh-slice zr)
+               (mesh->svg-paths (vec3 (* i 100) 100 0)))))
+       (svg/svg {:width "400mm" :height "200mm" :viewBox "0 0 400 200"})
+       (svg/->xml)
+       (spit path)))
 
 (defn export-segment-slices-svg
   [seg-id meshes]
   (dorun
    (map-indexed
     (fn [i m]
-      (export-mesh-slices-svg
-       (str "seg-" seg-id "-" i "-%d.svg") m))
+      (export-mesh-slices-svg (str "seg-" seg-id "-" i ".svg") m))
     meshes)))
