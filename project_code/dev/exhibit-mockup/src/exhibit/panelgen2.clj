@@ -223,10 +223,10 @@
 
 (defn mesh->svg
   [m]
-  (->> (g/center (g/transform m (g/scale M44 1000)) (vec3 100 100 0))
+  (->> (g/center (g/transform m (g/scale M44 1000)) (vec3 150 150 0))
        (g/faces)
        (map #(svg/path {:fill "black"} %))
-       (svg/svg {:width "200mm" :height "200mm" :viewBox "0 0 200 200"})
+       (svg/svg {:width "300mm" :height "300mm" :viewBox "0 0 300 300"})
        (svg/->xml)))
 
 (defn mesh->svg-paths
@@ -237,21 +237,33 @@
        (vector :g {})))
 
 (defn export-mesh-slices-svg
-  [path m]
-  (->> {1 [0 0.0048] 2 [0.005 0.007] 3 [0.0075 0.0095]}
-       (map
-        (fn [[i zr]]
-          (->> m
-               (select-mesh-slice zr)
-               (mesh->svg-paths (vec3 (* i 100) 100 0)))))
-       (svg/svg {:width "400mm" :height "200mm" :viewBox "0 0 400 200"})
-       (svg/->xml)
-       (spit path)))
+  [path width m]
+  (let [w (* 3 width)]
+    (->> {1 [0 0.0048] 2 [0.005 0.007] 3 [0.0075 0.0095]}
+         (map
+          (fn [[i zr]]
+            (->> m
+                 (select-mesh-slice zr)
+                 (mesh->svg-paths (vec3 (* (- i 0.5) width) 150 0)))))
+         (svg/svg {:width (str w "mm") :height "300mm" :viewBox (str "0 0 " w " 300")})
+         (svg/->xml)
+         (spit path))))
 
 (defn export-segment-slices-svg
-  [seg-id meshes]
+  [seg-id width meshes]
   (dorun
    (map-indexed
     (fn [i m]
-      (export-mesh-slices-svg (str "seg-" seg-id "-" i ".svg") m))
+      (export-mesh-slices-svg (str "seg-" seg-id "-" i ".svg") width m))
     meshes)))
+
+(defn export-all-panels-svg
+  [panel-fn stride panels]
+  (->> panels
+       (partition stride)
+       (map-indexed
+        (fn [i panels]
+          (->> panels
+               (make-segment-individual-meshes panel-fn)
+               (export-segment-slices-svg i 200))))
+       (dorun)))
