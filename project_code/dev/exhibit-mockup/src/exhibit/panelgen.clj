@@ -9,10 +9,7 @@
    [thi.ng.geom.core.vector :as v :refer [vec3 V3X V3Y V3Z]]
    [thi.ng.geom.core.matrix :as mat :refer [M44]]
    [thi.ng.geom.aabb :as a]
-   [thi.ng.geom.plane :as pl]
-   [thi.ng.geom.quad :as q]
    [thi.ng.geom.gmesh :as gm]
-   [thi.ng.geom.mesh.csg :as csg]
    [thi.ng.geom.mesh.io :as mio]
    [thi.ng.morphogen.core :as mg]
    [thi.ng.common.data.core :as d]
@@ -65,11 +62,6 @@
                   (assoc-in s42 [:out 3] (ext :rows nrows :w el))
                   (assoc-in s42 [:out 2] (ext :rows nrows :e el))])]
     (mg/split-displace :x :z :offset o1 :out [s3 s3])))
-
-(comment
-  (mg/subdiv-inset
-   :dir :z :inset i1
-   :out {4 nil}))
 
 (defn make-panel-seed
   [[[d h e a :as points] n] depth]
@@ -216,7 +208,6 @@
    (fn [f]
      (let [c (:z (gu/centroid f))
            d (g/dot V3Z (gu/ortho-normal f))]
-       ;;(when (m/in-range? zrange c) (prn c d))
        (if (and (m/in-range? zrange c) (m/delta= 1.0 d 0.1))
          [f])))
    m))
@@ -267,3 +258,38 @@
                (make-segment-individual-meshes panel-fn)
                (export-segment-slices-svg i 200))))
        (dorun)))
+
+(comment
+
+  ;; export combined STL of all panels of small plinth
+  (-> plinth-panels-sm
+      (partition 6)
+      (map #(make-segment (make-seg-panel6 true) %))
+      (save-meshes "plinth-panels-sm-flat.stl"))
+
+  ;; export combined STL of all panels of large plinth
+  (-> plinth-panels-xl
+      (partition 6)
+      (map #(make-segment (make-seg-panel6 true) %))
+      (save-meshes "plinth-panels-xl-flat.stl"))
+
+  ;; export individual SVG z-slices of all panels of small plinth
+  (export-all-panels-svg (make-seg-panel6 true) 6 plinth-panels-sm)
+
+  ;; export individual SVG z-slices of all panels of large plinth
+  (export-all-panels-svg (make-seg-panel6 true) 6 plinth-panels-xl)
+
+  ;; export STL of a single vertical segment of main canopy
+  (->> canopy-panels
+       (take canopy-segments)
+       (make-segment (make-seg-panel13 true))
+       (vector)
+       (save-meshes "canopy-seg.stl"))
+
+  ;; export STLs of invidual panels of a single vertical segment
+  (->> canopy-panels
+       (take canopy-segments)
+       (make-segment-individual-meshes (make-seg-panel13 true))
+       (export-panels))
+  
+  )
