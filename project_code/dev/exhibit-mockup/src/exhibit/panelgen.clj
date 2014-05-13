@@ -1,4 +1,4 @@
-(ns exhibit.panelgen2
+(ns exhibit.panelgen
   (:require
    [exhibit.utils :refer :all]
    [exhibit.canopy :refer :all]
