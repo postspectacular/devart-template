@@ -43,7 +43,7 @@
     (->> (conj strips (first strips))
          (connect-strips (inset-and-extrude-quad 0.002 0.003))
          (mapcat identity)
-         (gm/into-mesh))))
+         (g/into (gm/gmesh)))))
 
 (defn make-plinth-panels
   [surf-points]

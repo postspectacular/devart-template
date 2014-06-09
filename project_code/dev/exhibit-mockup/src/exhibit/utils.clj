@@ -32,7 +32,7 @@
                 n (vec3 (g/normalize (g/normal (:xy c)) thick))]
             (if (> (:z c) thresh)
               [[(g/- c n) (g/+ c n) (g/+ p n) (g/- p n)]]))))
-       (gm/into-mesh)))
+       (g/into (gm/gmesh))))
 
 (defn point-towards*
   [tx from to]
@@ -139,4 +139,5 @@
        (with-open [o (io/output-stream path)]
          (->> meshes
               (reduce g/into)
+              (g/tessellate)
               (write o))))))

@@ -10,6 +10,8 @@
    [thi.ng.geom.core.matrix :as mat :refer [M44]]
    [thi.ng.geom.aabb :as a]
    [thi.ng.geom.gmesh :as gm]
+   [thi.ng.geom.basicmesh :as bm]
+   [thi.ng.geom.types.utils :as tu]
    [thi.ng.geom.mesh.io :as mio]
    [thi.ng.morphogen.core :as mg]
    [thi.ng.common.data.core :as d]
@@ -27,7 +29,7 @@
             :dir :f :len al
             :out [(mg/subdiv
                    :slices 2
-                   :out [{}
+                   :out [(mg/subdiv-inset :dir :z :inset 0.001 :out {4 nil})
                          {:op :scale-side
                           :args {:side :f :scale 0.25}
                           :out [{}]}])])}))
@@ -67,13 +69,13 @@
   [[[d h e a :as points] n] depth]
   (let [off (g/* (vec3 n) depth)
         [c g f b] (map #(g/+ off %) points)]
-    (mg/seed (map vec3 [a b c d e f g h]))))
+    (mg/seed-box (map vec3 [a b c d e f g h]))))
 
 (defn make-panel
   [[[d h e a :as points] n r] tree depth]
   (let [off (g/* (vec3 n) depth)
         [c g f b] (map #(g/+ off %) points)
-        seed (mg/seed (map vec3 [a b c d e f g h]))]
+        seed (mg/seed-box (map vec3 [a b c d e f g h]))]
     (->> (mg/walk seed tree 1e6)
          (mg/union-mesh))))
 
@@ -116,7 +118,7 @@
               (< i 11) 5
               :default 3)
           ai (m/map-interval-clamped i 4 maxy 0.002 0.003)
-          al (m/map-interval-clamped i 4 maxy 0 0.04 0 0.03)
+          al (m/map-interval-clamped i 4 maxy 0 0.03 0 0.03)
           leaf (when (pos? al) (make-pedals ai al))
           t (make-tree o1 0 i1 i2 i3 i4 3 nr el leaf)]
       (make-panel p t 0.003))))
@@ -169,7 +171,7 @@
          (map (fn [theta]
                 (prn (m/degrees theta) "°")
                 (let [rfn (make-rotate-z-fn theta)]
-                  (g/into (gm/gmesh) (map (fn [f] (mapv rfn f)) faces)))))
+                  (g/into (bm/basic-mesh) (map (fn [f] (mapv rfn f)) faces)))))
          (reduce g/into segment)
          (vector)
          (save-meshes))))
@@ -187,10 +189,15 @@
     (mapv
      (fn [i [p n r :as panel]]
        (let [pmesh (panel-fn i panel)
-             pmesh (point-towards3 pmesh (g/centroid pmesh) n V3Z V3X)
-             tx (g/translate M44 0 0 (- (first (gu/axis-bounds 2 (keys (:vertices pmesh))))))
-             pmesh (g/transform pmesh tx)]
-         pmesh))
+             ;;pmesh (point-towards3 pmesh (g/centroid pmesh) n V3Z V3X)
+             pmesh (point-towards2 pmesh n V3Z r V3X)
+             ;;z (first (gu/axis-bounds 2 (g/vertices pmesh)))
+             pmesh (g/center pmesh)
+             ;;tx (g/translate M44 0 0 (- z))
+             ;;pmesh (g/transform pmesh tx)
+             ]
+         ;;(prn (g/centroid pmesh))
+         (g/transform pmesh (g/scale M44 1000.0))))
      (range) panels)))
 
 (defn export-panels
@@ -204,7 +211,7 @@
 
 (defn select-mesh-slice
   [zrange m]
-  (gm/map-faces
+  (tu/map-mesh
    (fn [f]
      (let [c (:z (gu/centroid f))
            d (g/dot V3Z (gu/ortho-normal f))]
@@ -262,16 +269,34 @@
 (comment
 
   ;; export combined STL of all panels of small plinth
-  (-> plinth-panels-sm
-      (partition 6)
-      (map #(make-segment (make-seg-panel6 true) %))
-      (save-meshes "plinth-panels-sm-flat.stl"))
+  (->> plinth-panels-sm
+       (partition 6)
+       (map #(make-segment (make-seg-panel6 true) %))
+       (save-meshes "plinth-panels-sm-flat.stl"))
+
+  (->> plinth-panels-sm
+       (partition 6)
+       (map #(make-segment-individual-meshes (make-seg-panel6 true) %))
+       (map-indexed
+        (fn [i seg-panels]
+          (map-indexed
+           #(save-meshes (format "plinth-sm-flat-%02d-%02d.stl" i %) [%2])
+           seg-panels))))
 
   ;; export combined STL of all panels of large plinth
-  (-> plinth-panels-xl
-      (partition 6)
-      (map #(make-segment (make-seg-panel6 true) %))
-      (save-meshes "plinth-panels-xl-flat.stl"))
+  (->> plinth-panels-xl
+       (partition 6)
+       (map #(make-segment (make-seg-panel6 true) %))
+       (save-meshes "plinth-panels-xl-flat.stl"))
+
+  (->> plinth-panels-xl
+       (partition 6)
+       (map #(make-segment-individual-meshes (make-seg-panel6 true) %))
+       (map-indexed
+        (fn [i seg-panels]
+          (map-indexed
+           #(save-meshes (format "plinth-xl-flat-%02d-%02d.stl" i %) [%2])
+           seg-panels))))
 
   ;; export individual SVG z-slices of all panels of small plinth
   (export-all-panels-svg (make-seg-panel6 true) 6 plinth-panels-sm)
@@ -290,6 +315,12 @@
   (->> canopy-panels
        (take canopy-segments)
        (make-segment-individual-meshes (make-seg-panel13 true))
-       (export-panels))
-  
+       (map-indexed #(save-meshes (format "canopy-flat-%02d.stl" %) [%2])))
+
+  (binding [m/*eps* 1e-9]
+    (->> canopy-panels
+         (take canopy-segments)
+         (last)
+         ((fn [p] ((make-seg-panel13 true) 12 p)))
+         ((fn [x] (repeat-segments x 26 26)))))
   )
