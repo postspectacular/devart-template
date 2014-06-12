@@ -11,6 +11,7 @@
    [thi.ng.geom.aabb :as a]
    [thi.ng.geom.gmesh :as gm]
    [thi.ng.geom.basicmesh :as bm]
+   [thi.ng.geom.quad :as q]
    [thi.ng.geom.types.utils :as tu]
    [thi.ng.geom.mesh.io :as mio]
    [thi.ng.morphogen.core :as mg]
@@ -72,12 +73,26 @@
     (mg/seed-box (map vec3 [a b c d e f g h]))))
 
 (defn make-panel
-  [[[d h e a :as points] n r] tree depth]
+  [[[d h e a] n r] tree depth]
   (let [off (g/* (vec3 n) depth)
-        [c g f b] (map #(g/+ off %) points)
-        seed (mg/seed-box (map vec3 [a b c d e f g h]))]
-    (->> (mg/walk seed tree 1e6)
-         (mg/union-mesh))))
+        ;;off (vec3 0 0 depth)
+        ;;tx (mat/look-at n (vec3) (gu/ortho-normal n r))
+        ;;[a d e h] (mapv #(g/transform % tx) [a d e h])
+        [b c f g] (map #(g/+ off %) [a d e h])
+        points [a b c d e f g h]
+        ;;ct (gu/centroid [a d e h])
+        ;;points (map #(g/- % ct) points)
+        seed (mg/seed-box points)
+        ;;gtree (mg/compute-tree-map seed tree)
+        res (mg/walk seed tree 1e6)]
+    (comment
+      ;;(spit "paneltree.clj" (str "{:map "(pr-str gtree) "\n\n:tree" tree "}"))
+      #_(doseq [i (range (count res))]
+          (with-open [o (io/output-stream (format "p-%04d.stl" i))]
+            (prn i)
+            (mio/write-stl o (g/tessellate (g/into (bm/basic-mesh) (nth res i))))))
+      (spit "paneltree.clj" (pr-str res)))
+    (mg/union-mesh res)))
 
 (defn make-seg-panel15
   [flat?]
@@ -169,7 +184,7 @@
          (drop 1)
          (take (dec n))
          (map (fn [theta]
-                (prn (m/degrees theta) "°")
+                (prn (str (m/degrees theta) "°"))
                 (let [rfn (make-rotate-z-fn theta)]
                   (g/into (bm/basic-mesh) (map (fn [f] (mapv rfn f)) faces)))))
          (reduce g/into segment)
@@ -190,7 +205,8 @@
      (fn [i [p n r :as panel]]
        (let [pmesh (panel-fn i panel)
              ;;pmesh (point-towards3 pmesh (g/centroid pmesh) n V3Z V3X)
-             pmesh (point-towards2 pmesh n V3Z r V3X)
+             ;;pmesh (point-towards2 pmesh n V3Z r V3X)
+             pmesh (g/transform pmesh (mat/look-at n (vec3) (gu/ortho-normal n r)))
              ;;z (first (gu/axis-bounds 2 (g/vertices pmesh)))
              pmesh (g/center pmesh)
              ;;tx (g/translate M44 0 0 (- z))
@@ -266,6 +282,9 @@
                (export-segment-slices-svg i 200))))
        (dorun)))
 
+;; resin density 1.12g/cm3
+;; 0.00112 g/mm3
+
 (comment
 
   ;; export combined STL of all panels of small plinth
@@ -287,7 +306,7 @@
   (->> plinth-panels-xl
        (partition 6)
        (map #(make-segment (make-seg-panel6 true) %))
-       (save-meshes "plinth-panels-xl-flat.stl"))
+       (save-meshes "plinth-panels-xl-flat-new.stl"))
 
   (->> plinth-panels-xl
        (partition 6)
@@ -308,8 +327,10 @@
   (->> canopy-panels
        (take canopy-segments)
        (make-segment (make-seg-panel13 true))
+       ;;((fn [x] (repeat-segments x 26 13)))
        (vector)
-       (save-meshes "canopy-seg.stl"))
+       (save-meshes "canopy-seg.stl")
+       )
 
   ;; export STLs of invidual panels of a single vertical segment
   (->> canopy-panels
@@ -321,6 +342,9 @@
     (->> canopy-panels
          (take canopy-segments)
          (last)
-         ((fn [p] ((make-seg-panel13 true) 12 p)))
-         ((fn [x] (repeat-segments x 26 26)))))
+         ((fn [p] ((make-seg-panel13 true) 11 p)))
+         ;;(vector)
+         ;;(save-meshes)
+         ((fn [x] (repeat-segments x 26 26)))
+         ))
   )
