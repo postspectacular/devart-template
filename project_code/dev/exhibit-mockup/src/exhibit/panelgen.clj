@@ -30,10 +30,13 @@
             :dir :f :len al
             :out [(mg/subdiv
                    :slices 2
-                   :out [(mg/subdiv-inset :dir :z :inset 0.001 :out {4 nil})
+                   :out [(mg/subdiv-inset :dir :z :inset 0.0012 :out {4 nil})
                          {:op :scale-side
                           :args {:side :f :scale 0.25}
-                          :out [{}]}])])}))
+                          :out [(mg/subdiv
+                                 :slices 2
+                                 :out [(mg/subdiv-inset :dir :z :inset 0.0012 :out {4 nil})
+                                       {}])]}])])}))
 
 (defn make-tree
   [o1 o2 i1 i2 i3 i4 ncols nrows el leaf]
@@ -47,24 +50,32 @@
              :dir :z :inset i2
              :out {4 (inner :rows i3 (inner :cols i4 nil))})
         ext (fn [dir1 n dir2 elen]
-              (mg/extrude
-               :dir :f :len 0.005
-               :out [(mg/subdiv
-                      :slices 3
-                      :out [{} {}
-                            (mg/subdiv
-                             dir1 n
-                             :out {(int (/ n 2))
-                                   (mg/extrude
-                                    :dir dir2 :len elen
-                                    :out [(or leaf {})])})])]))
+              (let [leaf (if (and (= :cols dir1) leaf)
+                           (mg/extrude
+                            :dir :e :len 0.001
+                            :out [(mg/extrude
+                                   :dir :w :len 0.001
+                                   :out [leaf])])
+                           leaf)]
+                (mg/extrude
+                 :dir :f :len 0.005
+                 :out [(mg/subdiv
+                        :slices 3
+                        :out [{} {}
+                              (mg/subdiv
+                               dir1 n
+                               :out {(int (/ n 2))
+                                     (mg/extrude
+                                      :dir dir2 :len elen
+                                      :out [(or leaf {})])})])])))
         s3 (mg/subdiv-inset
             :dir :z :inset i1
             :out [(assoc-in s41 [:out 1] (ext :cols ncols :s el))
                   (assoc-in s41 [:out 0] (ext :cols ncols :n el))
                   (assoc-in s42 [:out 3] (ext :rows nrows :w el))
                   (assoc-in s42 [:out 2] (ext :rows nrows :e el))])]
-    (mg/split-displace :x :z :offset o1 :out [s3 s3])))
+    ;;(mg/split-displace :x :z :offset o1 :out [s3 s3])
+    (mg/subdiv :cols 2 :out [s3 s3])))
 
 (defn make-panel-seed
   [[[d h e a :as points] n] depth]
@@ -121,21 +132,18 @@
   (fn [i p]
     (let [maxy 12
           i1 (m/map-interval-clamped i 5 maxy 0.0225 0.05)
-          i2 0.003
+          i2 (m/map-interval-clamped i 8 maxy 0.003 0.00425 0.003 0.00425) ; 0.003
           i3 0.0025
-          i4 (* i3 0.5)
+          i4 (* i3 0.8)
           o1 (if flat? 0 (m/map-interval i 0 maxy 0.025 0.01))
-          el (m/map-interval-clamped i 5 maxy 0.005 0.03 0.005 0.025)
-          nr (cond
-              (< i 4) 11
-              (< i 6) 9
-              (< i 8) 7
-              (< i 11) 5
-              :default 3)
-          ai (m/map-interval-clamped i 4 maxy 0.002 0.003)
-          al (m/map-interval-clamped i 4 maxy 0 0.03 0 0.03)
+          ;; el (m/map-interval-clamped i 5 maxy 0.005 0.03 0.005 0.025)
+          el ([0.005 0.005 0.005 0.005 0.005 0.005 0.0085 0.011 0.013 0.016 0.019 0.023 0.026] i)
+          nr ([11 11 11 11 9 9 7 7 5 5 5 5 3] i)
+          ai (m/map-interval-clamped i 4 maxy 0.00075 0.0025)
+          al (m/map-interval-clamped i 4 maxy 0.001 0.022 0 0.022)
           leaf (when (pos? al) (make-pedals ai al))
           t (make-tree o1 0 i1 i2 i3 i4 3 nr el leaf)]
+      (prn i :i2 i2 :el el)
       (make-panel p t 0.003))))
 
 (defn make-seg-panel6
@@ -329,22 +337,22 @@
        (make-segment (make-seg-panel13 true))
        ;;((fn [x] (repeat-segments x 26 13)))
        (vector)
-       (save-meshes "canopy-seg.stl")
+       (save-meshes "canopy-seg-x0.8.stl")
        )
 
   ;; export STLs of invidual panels of a single vertical segment
   (->> canopy-panels
        (take canopy-segments)
        (make-segment-individual-meshes (make-seg-panel13 true))
-       (map-indexed #(save-meshes (format "canopy-flat-%02d.stl" %) [%2])))
+       (map-indexed #(save-meshes (format "canopy-master-%02d.stl" %) [%2])))
 
   (binding [m/*eps* 1e-9]
     (->> canopy-panels
          (take canopy-segments)
          (last)
-         ((fn [p] ((make-seg-panel13 true) 11 p)))
-         ;;(vector)
-         ;;(save-meshes)
-         ((fn [x] (repeat-segments x 26 26)))
+         ((fn [p] ((make-seg-panel13 true) 12 p)))
+         (vector)
+         (save-meshes)
+         ;;((fn [x] (repeat-segments x 26 26)))
          ))
   )
