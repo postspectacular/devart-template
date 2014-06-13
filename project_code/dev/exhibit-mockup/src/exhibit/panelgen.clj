@@ -103,7 +103,7 @@
             (prn i)
             (mio/write-stl o (g/tessellate (g/into (bm/basic-mesh) (nth res i))))))
       (spit "paneltree.clj" (pr-str res)))
-    (mg/union-mesh res)))
+    (mg/union-mesh (bm/basic-mesh) 1e-5 res)))
 
 (defn make-seg-panel15
   [flat?]
@@ -151,15 +151,35 @@
   (fn [i p]
     (let [maxy 5
           i1 ([0.009 0.011 0.013 0.0175 0.02 0.02] i)
+          i1 ([0.009 0.011 0.015 0.0175 0.022 0.025] i)
           i2 (m/map-interval-clamped i 0 maxy 0.001 0.0025)
-          i3 (m/map-interval-clamped i 0 maxy 0.001 0.002)
-          i4 (* i3 0.75)
+          i3 (m/map-interval-clamped i 0 maxy 0.0012 0.002)
+          i4 (* i3 0.85)
           o1 (if flat? 0 (m/map-interval i 0 maxy 0.01 0.005))
           el (m/map-interval-clamped i 2 maxy 0.005 0.015)
-          nc ([3 3 3 3 5 7] i)
-          nr ([11 11 9 7 5 5] i)
+          nc ([3 3 3 3 3 3] i)
+          nr ([11 11 9 7 7 5] i)
           ai (m/map-interval-clamped i 2 maxy 0.0005 0.001)
-          al (m/map-interval-clamped i 2 maxy 0 0.005)
+          al (m/map-interval-clamped i 0 maxy 0.00 0.005)
+          leaf (when (pos? al) (make-pedals ai al))
+          t (make-tree o1 0 i1 i2 i3 i4 nc nr el leaf)]
+      (make-panel p t 0.003))))
+
+(defn make-seg-panel6-small
+  [flat?]
+  (fn [i p]
+    (let [maxy 5
+          i1 ([0.009 0.011 0.013 0.0175 0.02 0.02] i)
+          i1 ([0.009 0.011 0.015 0.0175 0.022 0.025] i)
+          i2 (m/map-interval-clamped i 0 maxy 0.001 0.0025)
+          i3 (m/map-interval-clamped i 0 maxy 0.0012 0.002)
+          i4 (* i3 0.85)
+          o1 (if flat? 0 (m/map-interval i 0 maxy 0.01 0.005))
+          el (m/map-interval-clamped i 2 maxy 0.005 0.015)
+          nc ([3 3 3 3 3 3] i)
+          nr ([11 11 9 7 5 3] i)
+          ai (m/map-interval-clamped i 2 maxy 0.0005 0.001)
+          al (m/map-interval-clamped i 0 maxy 0.00 0.005)
           leaf (when (pos? al) (make-pedals ai al))
           t (make-tree o1 0 i1 i2 i3 i4 nc nr el leaf)]
       (make-panel p t 0.003))))
@@ -298,12 +318,12 @@
   ;; export combined STL of all panels of small plinth
   (->> plinth-panels-sm
        (partition 6)
-       (map #(make-segment (make-seg-panel6 true) %))
-       (save-meshes "plinth-panels-sm-flat.stl"))
+       (map #(make-segment (make-seg-panel6-small true) %))
+       (save-meshes "plinth-panels-sm-master2.stl"))
 
   (->> plinth-panels-sm
        (partition 6)
-       (map #(make-segment-individual-meshes (make-seg-panel6 true) %))
+       (map #(make-segment-individual-meshes (make-seg-panel6-small true) %))
        (map-indexed
         (fn [i seg-panels]
           (map-indexed
@@ -314,7 +334,7 @@
   (->> plinth-panels-xl
        (partition 6)
        (map #(make-segment (make-seg-panel6 true) %))
-       (save-meshes "plinth-panels-xl-flat-new.stl"))
+       (save-meshes "plinth-panels-xl-master-new2.stl"))
 
   (->> plinth-panels-xl
        (partition 6)
@@ -322,7 +342,7 @@
        (map-indexed
         (fn [i seg-panels]
           (map-indexed
-           #(save-meshes (format "plinth-xl-flat-%02d-%02d.stl" i %) [%2])
+           #(save-meshes (format "plinth-xl-master-%02d-%02d.stl" i %) [%2])
            seg-panels))))
 
   ;; export individual SVG z-slices of all panels of small plinth
@@ -336,8 +356,8 @@
        (take canopy-segments)
        (make-segment (make-seg-panel13 true))
        ;;((fn [x] (repeat-segments x 26 13)))
-       (vector)
-       (save-meshes "canopy-seg-x0.8.stl")
+       ;;(vector)
+       (save-meshes "canopy-seg.stl")
        )
 
   ;; export STLs of invidual panels of a single vertical segment
